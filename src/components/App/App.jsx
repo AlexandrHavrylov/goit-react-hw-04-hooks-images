@@ -1,121 +1,80 @@
-import React, { Component } from "react";
-import Button from "../Button/Button";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "../Button/Button";
 import { ImageGallery } from "../ImageGallery/ImageGallery";
 import { Modal } from "../Modal/Modal";
 import { Serachbar } from "../Searchbar/Serachbar";
 import { Container, StyledLoader } from "./App.styled";
 import { fetchImage } from "../../servises/image-api";
 
-export class App extends Component {
-  state = {
-    imgInModal: null,
-    image: "",
-    page: 1,
-    imagesInGallery: [],
-    isModalVisible: false,
-    status: "idle",
+export function App() {
+  const isFirstRender = useRef(true);
+  const [imgInModal, setImgInModal] = useState(null);
+  const [image, setImage] = useState("");
+  const [page, setPage] = useState(1);
+  const [imagesInGallery, setImagesInGallery] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const fetch = async () => {
+      try {
+        setStatus("pending");
+        const imagesToGallery = await fetchImage(image, page);
+        page === 1
+          ? setImagesInGallery(imagesToGallery)
+          : setImagesInGallery((state) => [...state, ...imagesToGallery]);
+
+        setStatus("resolved");
+
+        page === 1
+          ? window.scrollTo({ top: 0, behavior: "smooth" })
+          : window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: "smooth",
+            });
+      } catch {
+        setStatus("rejected");
+      }
+    };
+    fetch();
+  }, [image, page]);
+
+  const handleGetImg = (image, page) => {
+    setImage(image);
+    setPage(page);
+  };
+  const handleModalOpen = (imgInModal) => {
+    setImgInModal(imgInModal);
+    setIsModalVisible(true);
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { image, page } = this.state;
-    const pageChange = prevState.page !== page;
-    const imageChange = image.trim() && prevState.image !== image;
+  const isVisible = imagesInGallery.length > 0;
 
-    try {
-      if (imageChange) {
-        this.setState({
-          status: "pending",
-        });
-
-        const imagesInGallery = await fetchImage(image);
-        this.setState({
-          imagesInGallery,
-          status: "resolved",
-        });
-      }
-
-      if (pageChange) {
-        this.setState({
-          status: "pending",
-        });
-
-        const imagesInGallery = await fetchImage(image, page);
-
-        this.setState((prevState) => ({
-          imagesInGallery: [...prevState.imagesInGallery, ...imagesInGallery],
-          status: "resolved",
-        }));
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    } catch {
-      this.setState({
-        status: "rejected",
-      });
-    }
+  if (status === "idle" || "resolved") {
+    return (
+      <Container>
+        <Serachbar onSubmit={handleGetImg} />;
+        <ImageGallery images={imagesInGallery} openModal={handleModalOpen} />
+        {isVisible && <Button onClick={setPage} page={page} />}
+        {isModalVisible && (
+          <Modal onClose={setIsModalVisible} img={imgInModal} />
+        )}
+      </Container>
+    );
   }
 
-  getImage = (image) => {
-    this.setState({
-      image,
-    });
-  };
+  if (status === "pending") {
+    return (
+      <StyledLoader type="ThreeDots" color="#3f51b5" height={80} width={80} />
+    );
+  }
 
-  onLoadMore = (page) => {
-    this.setState({
-      page,
-    });
-  };
-
-  handleModalOpen = (imgInModal) => {
-    this.setState({
-      imgInModal,
-      isModalVisible: true,
-    });
-  };
-
-  modalClose = (value) => {
-    this.setState({
-      isModalVisible: value,
-    });
-  };
-
-  render() {
-    const { imagesInGallery, imgInModal, isModalVisible, status } = this.state;
-
-    const isVisible = imagesInGallery.length > 0;
-
-    if (status === "idle") {
-      return <Serachbar onSubmit={this.getImage} />;
-    }
-
-    if (status === "resolved") {
-      return (
-        <Container>
-          <Serachbar onSubmit={this.getImage} />;
-          <ImageGallery
-            images={imagesInGallery}
-            openModal={this.handleModalOpen}
-          />
-          {isVisible && (
-            <Button onClick={this.onLoadMore} page={this.state.page} />
-          )}
-          {isModalVisible && (
-            <Modal onClose={this.modalClose} img={imgInModal} />
-          )}
-        </Container>
-      );
-    }
-    if (status === "pending") {
-      return (
-        <StyledLoader type="ThreeDots" color="#3f51b5" height={80} width={80} />
-      );
-    }
-
-    if (status === "rejectd") {
-      return <p>Ой, что то пошло не так</p>;
-    }
+  if (status === "rejectd") {
+    return <p>Ой, что то пошло не так</p>;
   }
 }

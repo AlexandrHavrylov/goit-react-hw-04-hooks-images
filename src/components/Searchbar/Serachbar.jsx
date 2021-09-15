@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { useState } from "react";
 import {
   Button,
   ButtonLabel,
@@ -7,46 +7,37 @@ import {
   SearchForm,
 } from "./Searchbar.styled";
 
-export class Serachbar extends Component {
-  state = {
-    image: "",
+export function Serachbar({ onSubmit }) {
+  const [image, setImage] = useState("");
+  const [page] = useState(1);
+
+  const handleInputChange = (e) => {
+    setImage(e.target.value);
   };
 
-  handleInputChange = (e) => {
-    this.setState({
-      image: e.target.value,
-    });
-  };
-
-  handleFormSubit = (e) => {
+  const handleFormSubit = (e) => {
     e.preventDefault();
-    this.props.onSubmit(this.state.image);
-    this.setState({
-      image: "",
-    });
+    onSubmit(image, page);
+    setImage("");
   };
 
-  render() {
-    return (
-      <Searchbar className="Searchbar">
-        <SearchForm onSubmit={this.handleFormSubit}>
-          <Button type="submit">
-            <ButtonLabel className="SearchForm-button-label">
-              Search
-            </ButtonLabel>
-          </Button>
+  return (
+    <Searchbar className="Searchbar">
+      <SearchForm onSubmit={handleFormSubit}>
+        <Button type="submit">
+          <ButtonLabel className="SearchForm-button-label">Search</ButtonLabel>
+        </Button>
 
-          <Input
-            onChange={this.handleInputChange}
-            className="SearchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.image}
-          />
-        </SearchForm>
-      </Searchbar>
-    );
-  }
+        <Input
+          onChange={handleInputChange}
+          className="SearchForm-input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={image}
+        />
+      </SearchForm>
+    </Searchbar>
+  );
 }
