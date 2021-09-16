@@ -9,26 +9,3 @@ async function fetchImage(imgToFind, page = 1) {
 }
 
 export { fetchImage };
-
-// useEffect(() => {
-//   setStatus("pending");
-//   fetchImage(image).then((imagesToGallery) => {
-//     setImagesInGallery(imagesToGallery);
-//     setStatus("resolved");
-//   });
-// }, [image]);
-
-// useEffect(() => {
-//   setStatus("pending");
-//   fetchImage(image, page)
-//     .then((imagesToGallery) => {
-//       setImagesInGallery([...imagesInGallery, ...imagesToGallery]);
-//       setStatus("resolved");
-//     })
-//     .then(
-//       window.scrollTo({
-//         top: document.documentElement.scrollHeight,
-//         behavior: "smooth",
-//       })
-//     );
-// }, [image, imagesInGallery, page]);
