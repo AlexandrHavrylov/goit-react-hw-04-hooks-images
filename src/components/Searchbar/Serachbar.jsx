@@ -9,7 +9,6 @@ import {
 
 export function Serachbar({ onSubmit }) {
   const [image, setImage] = useState("");
-  const [page] = useState(1);
 
   const handleInputChange = (e) => {
     setImage(e.target.value);
@@ -17,7 +16,7 @@ export function Serachbar({ onSubmit }) {
 
   const handleFormSubit = (e) => {
     e.preventDefault();
-    onSubmit(image, page);
+    onSubmit(image);
     setImage("");
   };
 

@@ -51,10 +51,11 @@ export function App() {
     fetch();
   }, [image, page]);
 
-  const handleGetImg = (image, page) => {
+  const handleGetImg = (image) => {
     setImage(image);
-    setPage(page);
+    setPage(1);
   };
+
   const handleModalOpen = (imgInModal) => {
     setImgInModal(imgInModal);
   };
